@@ -3,12 +3,13 @@ package receiver
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
-	"github.com/theo-lanman/sidecar/context"
-	"github.com/theo-lanman/sidecar/message"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/boltdb/bolt"
+	"github.com/theo-lanman/sidecar/context"
+	"github.com/theo-lanman/sidecar/message"
 )
 
 // contextHandlerFunc

@@ -1,12 +1,13 @@
 package main
 
 import (
+	"log"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/theo-lanman/sidecar/context"
 	"github.com/theo-lanman/sidecar/forwarder"
 	"github.com/theo-lanman/sidecar/receiver"
-	"log"
-	"time"
 )
 
 // This is a prototype of a http-listening sidecar for publishing to a message queue such as Kafka.

@@ -3,10 +3,11 @@ package forwarder
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/theo-lanman/sidecar/context"
 	"github.com/theo-lanman/sidecar/message"
-	"time"
 )
 
 func Start(c *context.Context) {
