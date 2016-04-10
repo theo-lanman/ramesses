@@ -1,9 +1,7 @@
 package receiver
 
 import (
-	"encoding/binary"
 	"encoding/json"
-	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/theo-lanman/sidecar/context"
 	"github.com/theo-lanman/sidecar/message"
@@ -46,7 +44,6 @@ func (s *contextServeMux) handleContextFunc(pattern string, handlerFunc contextH
 // Starts a receiver
 func Start(c *context.Context, errorQueue chan<- error) {
 	s := newContextServeMux(c)
-	s.handleContextFunc("/jobs/all", jobsAllGet)
 	s.handleContextFunc("/jobs", jobsPost)
 
 	log.Printf("Listening...")
@@ -86,25 +83,6 @@ func jobsPost(c *context.Context, w http.ResponseWriter, r *http.Request) {
 			return nil
 		})
 		log.Printf("Stored item id=%v", jobId)
-	default:
-		http.Error(w, "405 method not allowed", 405)
-	}
-}
-
-func jobsAllGet(c *context.Context, w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		c.DB.View(func(tx *bolt.Tx) error {
-			bucket := tx.Bucket(c.BucketName)
-			cursor := bucket.Cursor()
-			for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
-				var msg message.Message
-				json.Unmarshal(v, &msg)
-				fmt.Fprintf(w, "key=%v value=%v\n", binary.BigEndian.Uint64(k), string(msg.Body))
-			}
-			return nil
-		})
-		fmt.Fprintf(w, "done\n")
 	default:
 		http.Error(w, "405 method not allowed", 405)
 	}
