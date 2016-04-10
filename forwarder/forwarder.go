@@ -66,9 +66,8 @@ func StartWorker(c *context.Context, workQueue <-chan message.Batch) {
 			// delete messages from db
 			c.DB.Update(func(tx *bolt.Tx) error {
 				for _, msg := range batch {
-					idBytes := message.Itob(msg.Id)
 					bucket := tx.Bucket(c.BucketName)
-					bucket.Delete(idBytes)
+					bucket.Delete(msg.IdBytes())
 				}
 				return nil
 			})

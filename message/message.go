@@ -23,8 +23,10 @@ func NewBatch() Batch {
 	return make([]Message, 0, 20)
 }
 
-func Itob(v uint64) []byte {
+// IdBytes returns the message's id as a big-endian slice of bytes, such that
+// the resulting byte slice sort order matches the integer sort order.
+func (msg Message) IdBytes() []byte {
 	b := make([]byte, 8)
-	binary.BigEndian.PutUint64(b, v)
+	binary.BigEndian.PutUint64(b, msg.Id)
 	return b
 }

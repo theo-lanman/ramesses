@@ -73,15 +73,17 @@ func jobsPost(c *context.Context, w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 
-			msgBytes, err := json.Marshal(message.NewMessage(id, body))
+			msg := message.NewMessage(id, body)
+			msgBytes, err := json.Marshal(msg)
 			if err != nil {
 				return err
 			}
 
-			err = bucket.Put(message.Itob(id), msgBytes)
+			err = bucket.Put(msg.IdBytes(), msgBytes)
 			if err != nil {
 				return err
 			}
+
 			jobId = id
 			return nil
 		})
