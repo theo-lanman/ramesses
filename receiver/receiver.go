@@ -2,6 +2,7 @@ package receiver
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/theo-lanman/sidecar/context"
 	"github.com/theo-lanman/sidecar/message"
@@ -53,17 +54,19 @@ func Start(c *context.Context, errorQueue chan<- error) {
 	errorQueue <- err
 }
 
-// Accepts a POST request, and attempts to write the request to the database
+// jobsPost
+// Handles a POST request, and attempts to write the request to the database
 func jobsPost(c *context.Context, w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "500 Could not read body", 500)
+			http.Error(w, fmt.Sprintf("500 Could not read body: %v", err), 500)
+			return
 		}
 
 		var jobId uint64
-		c.DB.Batch(func(tx *bolt.Tx) error {
+		err = c.DB.Batch(func(tx *bolt.Tx) error {
 			bucket := tx.Bucket(c.BucketName)
 			id, err := bucket.NextSequence()
 			if err != nil {
@@ -82,6 +85,11 @@ func jobsPost(c *context.Context, w http.ResponseWriter, r *http.Request) {
 			jobId = id
 			return nil
 		})
+		if err != nil {
+			http.Error(w, fmt.Sprintf("500 Error writing job: %v", err), 500)
+			return
+		}
+
 		log.Printf("Stored item id=%v", jobId)
 	default:
 		http.Error(w, "405 method not allowed", 405)
