@@ -30,7 +30,7 @@ func main() {
 	go forwarder.Start(context)
 
 	httpErrors := make(chan error)
-	go receiver.StartHTTPServer(context, httpErrors)
+	go receiver.Start(context, httpErrors)
 
 	for {
 		select {

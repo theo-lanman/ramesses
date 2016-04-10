@@ -12,19 +12,42 @@ import (
 	"net/http"
 )
 
+// contextHandlerFunc
+// An HTTP handler func which takes a context.Context pointer as an additional argument
+type contextHandlerFunc func(*context.Context, http.ResponseWriter, *http.Request)
+
+// contextHandler
+// Wraps a contextHandlerFunc and a context.Context and implements the http.Handler interface
 type contextHandler struct {
 	*context.Context
-	F func(*context.Context, http.ResponseWriter, *http.Request)
+	handlerFunc contextHandlerFunc
 }
 
 func (h contextHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.F(h.Context, w, r)
+	h.handlerFunc(h.Context, w, r)
 }
 
-func StartHTTPServer(c *context.Context, errorQueue chan<- error) {
-	s := http.NewServeMux()
-	s.Handle("/jobs/all", contextHandler{c, jobsAllGet})
-	s.Handle("/jobs", contextHandler{c, jobsPost})
+// contextServeMux
+// An http.ServeMux with a context.Context, to simplify handling http with contextHandlerFuncs
+type contextServeMux struct {
+	*context.Context
+	*http.ServeMux
+}
+
+func newContextServeMux(c *context.Context) *contextServeMux {
+	return &contextServeMux{c, http.NewServeMux()}
+}
+
+func (s *contextServeMux) handleContextFunc(pattern string, handlerFunc contextHandlerFunc) {
+	s.Handle(pattern, contextHandler{s.Context, handlerFunc})
+}
+
+// Start
+// Starts a receiver
+func Start(c *context.Context, errorQueue chan<- error) {
+	s := newContextServeMux(c)
+	s.handleContextFunc("/jobs/all", jobsAllGet)
+	s.handleContextFunc("/jobs", jobsPost)
 
 	log.Printf("Listening...")
 
