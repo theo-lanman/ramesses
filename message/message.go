@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Message models a message.
 type Message struct {
 	Attempts    int
 	CreatedAt   time.Time
@@ -13,17 +14,21 @@ type Message struct {
 	Body        []byte
 }
 
-type Batch []Message
-
+// NewMessage creates a new Message given an id and a body.
 func NewMessage(id uint64, body []byte) Message {
 	return Message{Attempts: 0, CreatedAt: time.Now(), Id: id, Body: body}
 }
 
+// Batch is just a slice of Messages.
+type Batch []Message
+
+// NewBatch makes a new Batch preallocated for 20 Messages, because that is the
+// current hard-coded max batch size.
 func NewBatch() Batch {
 	return make([]Message, 0, 20)
 }
 
-// IdBytes returns the message's id as a big-endian slice of bytes, such that
+// IdBytes returns the Message's id as a big-endian slice of bytes, such that
 // the resulting byte slice sort order matches the integer sort order.
 func (msg Message) IdBytes() []byte {
 	b := make([]byte, 8)
