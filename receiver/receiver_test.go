@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/boltdb/bolt"
-	"github.com/theo-lanman/sidecar/context"
+	"github.com/theo-lanman/ramesses/context"
 	"io"
 	"net/http"
 	"net/http/httptest"

@@ -1,15 +1,16 @@
+// This is a prototype of a http-listening proxy for publishing to a message
+// queue such as Kafka.
 package main
 
 import (
 	"github.com/boltdb/bolt"
-	"github.com/theo-lanman/sidecar/context"
-	"github.com/theo-lanman/sidecar/forwarder"
-	"github.com/theo-lanman/sidecar/receiver"
+	"github.com/theo-lanman/ramesses/context"
+	"github.com/theo-lanman/ramesses/forwarder"
+	"github.com/theo-lanman/ramesses/receiver"
 	"log"
 	"time"
 )
 
-// This is a prototype of a http-listening sidecar for publishing to a message queue such as Kafka.
 func main() {
 	// Instiate db and initialize buckets if necessary
 	bucketName := []byte("messages")
