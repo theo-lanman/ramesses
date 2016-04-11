@@ -3,10 +3,11 @@ package forwarder
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/theo-lanman/sidecar/context"
 	"github.com/theo-lanman/sidecar/message"
-	"time"
 )
 
 func Start(c *context.Context) {
@@ -33,7 +34,9 @@ func Start(c *context.Context) {
 					if err != nil {
 						return err
 					}
-					bucket.Put(k, msgBytes)
+					if err = bucket.Put(k, msgBytes); err != nil {
+						return err
+					}
 					items++
 				}
 			}
@@ -67,7 +70,9 @@ func StartWorker(c *context.Context, workQueue <-chan message.Batch) {
 			c.DB.Update(func(tx *bolt.Tx) error {
 				for _, msg := range batch {
 					bucket := tx.Bucket(c.BucketName)
-					bucket.Delete(msg.IdBytes())
+					if err := bucket.Delete(msg.IdBytes()); err != nil {
+						return err
+					}
 				}
 				return nil
 			})

@@ -1,14 +1,16 @@
 package receiver
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/boltdb/bolt"
-	"github.com/theo-lanman/sidecar/context"
-	"github.com/theo-lanman/sidecar/message"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/boltdb/bolt"
+	"github.com/theo-lanman/sidecar/context"
+	"github.com/theo-lanman/sidecar/message"
 )
 
 // contextHandlerFunc
@@ -41,7 +43,6 @@ func (s *contextServeMux) handleContextFunc(pattern string, handlerFunc contextH
 	s.Handle(pattern, contextHandler{s.Context, handlerFunc})
 }
 
-// Start
 // Starts a receiver
 func Start(c *context.Context, errorQueue chan<- error) {
 	s := newContextServeMux(c)
@@ -50,8 +51,7 @@ func Start(c *context.Context, errorQueue chan<- error) {
 	log.Printf("Listening...")
 
 	// blocks while serving; always returns a non-nil error
-	err := http.ListenAndServe(":5050", s)
-	errorQueue <- err
+	errorQueue <- http.ListenAndServe(":5050", s)
 }
 
 // jobsPost
@@ -79,8 +79,7 @@ func jobsPost(c *context.Context, w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 
-			err = bucket.Put(msg.IdBytes(), msgBytes)
-			if err != nil {
+			if err = bucket.Put(msg.IdBytes(), msgBytes); err != nil {
 				return err
 			}
 
@@ -93,6 +92,27 @@ func jobsPost(c *context.Context, w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Printf("Stored item id=%v", jobId)
+	default:
+		http.Error(w, "405 method not allowed", 405)
+	}
+}
+
+func jobsAllGet(c *context.Context, w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		c.DB.View(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket(c.BucketName)
+			cursor := bucket.Cursor()
+			for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
+				var msg message.Message
+				if err := json.Unmarshal(v, &msg); err != nil {
+					return err
+				}
+				fmt.Fprintf(w, "key=%v value=%v\n", binary.BigEndian.Uint64(k), string(msg.Body))
+			}
+			return nil
+		})
+		fmt.Fprintf(w, "done\n")
 	default:
 		http.Error(w, "405 method not allowed", 405)
 	}

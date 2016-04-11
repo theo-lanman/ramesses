@@ -1,12 +1,13 @@
 package main
 
 import (
+	"log"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/theo-lanman/sidecar/context"
 	"github.com/theo-lanman/sidecar/forwarder"
 	"github.com/theo-lanman/sidecar/receiver"
-	"log"
-	"time"
 )
 
 // This is a prototype of a http-listening sidecar for publishing to a message queue such as Kafka.
@@ -18,8 +19,7 @@ func main() {
 		log.Fatal(err)
 	}
 	db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(bucketName)
-		if err != nil {
+		if _, err := tx.CreateBucketIfNotExists(bucketName); err != nil {
 			return err
 		}
 		return nil
@@ -31,12 +31,7 @@ func main() {
 
 	httpErrors := make(chan error)
 	go receiver.Start(context, httpErrors)
-
-	for {
-		select {
-		// If the HTTP server dies, we die
-		case err := <-httpErrors:
-			log.Fatal(err)
-		}
-	}
+	// Begin waiting on the first http error we hit
+	// Onc we get one, log fatal, exit 1
+	log.Fatal(<-httpErrors)
 }
