@@ -15,3 +15,4 @@ Sidecar is a kafka message forwarder which listens on HTTP, and (someday) forwar
 - configurability
 - support multiple topics
 - actually forward messages
+- benchmarks
