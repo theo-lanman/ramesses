@@ -92,6 +92,9 @@ func jobsPost(c *context.Context, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Success!
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(fmt.Sprintf("Stored item id=%v\n", jobId)))
 		log.Printf("Stored item id=%v", jobId)
 	default:
 		http.Error(w, "405 method not allowed", 405)
